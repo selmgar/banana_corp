@@ -85,12 +85,18 @@ async function mainMenu() {
   }
 }
 
+/**
+ * Queries the database for all departments and logs the results to the console.
+ */
 async function viewDepartments() {
   const res = await client.query('SELECT id, name FROM department');
   console.table(res.rows);
   mainMenu();
 }
 
+/**
+ * Queries the database for all roles and logs the results to the console.
+ */
 async function viewRoles() {
   const res = await client.query(
     ` SELECT role.id, role.title, department.name AS department, role.salary
@@ -101,7 +107,12 @@ async function viewRoles() {
   mainMenu();
 }
 
+/**
+ * Queries the database for all employees and logs the results to the console.
+ */
 async function viewEmployees() {
+  // COALESCE is used to display 'None' if the employee does not have a manager.
+  // The AS keyword is used to rename the column to 'manager'.
   const res = await client.query(
     ` SELECT 
         employee.id, 
@@ -121,6 +132,10 @@ async function viewEmployees() {
   mainMenu();
 }
 
+
+/**
+ * Prompts the user for the name of the department to add and inserts it into the database.
+ */
 async function addDepartment() {
   const answer = await input(
     {
@@ -128,13 +143,17 @@ async function addDepartment() {
     },
   );
 
-  
+  // Inserts the department into the database.
   await client.query('INSERT INTO department (name) VALUES ($1)', [answer]);
   console.log(`Added ${answer} to the database.`);
   mainMenu();
 }
 
+/**
+ * Prompts the user for the name, salary, and department of the role to add and inserts it into the database.
+ */
 async function addRole() {
+  // Queries the database for all departments and maps the results to an array of objects.
   const departments = await client.query('SELECT id, name FROM department');
   const departmentChoices = departments.rows.map(({ id, name }) => ({
     name: name,
@@ -152,6 +171,7 @@ async function addRole() {
     choices: departmentChoices,
   });
 
+  // Inserts the role into the database.
   await client.query(
     'INSERT INTO role (title, salary, department) VALUES ($1, $2, $3)',
     [title, salary, department]
@@ -160,21 +180,28 @@ async function addRole() {
   mainMenu();
 }
 
+/**
+ * Prompts the user for the first name, last name, role, and manager of the employee to add and inserts it into the database.
+ */
 async function addEmployee() {
+  // Queries the database for all roles and maps the results to an array of objects.
   const roles = await client.query('SELECT id, title FROM role');
   const roleChoices = roles.rows.map(({ id, title }) => ({
     name: title,
     value: id,
   }));
 
+  // Queries the database for all employees and maps the results to an array of objects.
   const employees = await client.query('SELECT id, first_name, last_name FROM employee');
   const managerChoices = employees.rows.map(({ id, first_name, last_name }) => ({
     name: `${first_name} ${last_name}`,
     value: id,
   }));
 
+  // Adds a 'None' option to the managerChoices array.
   managerChoices.unshift({ name: 'None', value: null });
 
+  // Prompts the user for the first name, last name, role, and manager of the employee.
   const firstName = await input({
     message: "Enter the employee's first name:",
   });
@@ -193,6 +220,7 @@ async function addEmployee() {
     choices: managerChoices,
   });
 
+  // Inserts the employee into the database.
   await client.query(
     'INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ($1, $2, $3, $4)',
     [firstName, lastName, role, manager]
@@ -201,19 +229,25 @@ async function addEmployee() {
   mainMenu();
 }
 
+/**
+ * Prompts the user to select an employee and a new role for the employee and updates the employee's role in the database.
+ */
 async function updateEmployeeRole() {
+  // Queries the database for all employees and maps the results to an array of objects.
   const employees = await client.query('SELECT id, first_name, last_name FROM employee');
   const employeeChoices = employees.rows.map(({ id, first_name, last_name }) => ({
     name: `${first_name} ${last_name}`,
     value: id,
   }));
 
+  // Queries the database for all roles and maps the results to an array of objects.
   const roles = await client.query('SELECT id, title FROM role');
   const roleChoices = roles.rows.map(({ id, title }) => ({
     name: title,
     value: id,
   }));
 
+  // Prompts the user to select an employee and a new role for the employee.
   const employee = await select({
     message: 'Select the employee to update:',
     choices: employeeChoices,
@@ -223,6 +257,7 @@ async function updateEmployeeRole() {
     choices: roleChoices,
   });
 
+  // Updates the employee's role in the database.
   await client.query(
     'UPDATE employee SET role_id = $1 WHERE id = $2',
     [role, employee]
