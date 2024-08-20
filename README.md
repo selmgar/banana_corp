@@ -1,4 +1,8 @@
+
 # Banana Corp
+
+https://github.com/user-attachments/assets/2ce85fd7-25c7-4c7d-9810-be271f5b30b5
+
 
   ## Table of Contents
   - [Description](#description)
