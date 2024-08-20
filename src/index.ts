@@ -55,6 +55,7 @@ async function mainMenu() {
       ],
     });
 
+  // Uses the answer to determine which switch case to use.
   switch (answer) {
     case 'view_departments':
       viewDepartments();
@@ -127,6 +128,7 @@ async function addDepartment() {
     },
   );
 
+  
   await client.query('INSERT INTO department (name) VALUES ($1)', [answer]);
   console.log(`Added ${answer} to the database.`);
   mainMenu();
